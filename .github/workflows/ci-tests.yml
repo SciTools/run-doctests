@@ -47,7 +47,7 @@ jobs:
 
       - name: "Create a conda environment"
         run: |
-          conda create --yes  --name testenv python=${{ matrix.python-version }}
+          conda create --yes  --name testenv python=${{ matrix.python-version }} pytest
 
       - name: "Conda info"
         run: |
