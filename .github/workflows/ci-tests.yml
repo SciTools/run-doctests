@@ -16,6 +16,8 @@ on:
   pull_request:
     branches:
       - "*"
+  schedule:
+    - cron: "0 15 * * 3" # Wednesday at 15:00 UTC
   workflow_dispatch:
 
 jobs:
