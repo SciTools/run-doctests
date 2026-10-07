@@ -33,19 +33,6 @@ repos:
         types_or: [asciidoc, python, markdown, rst]
         additional_dependencies: [tomli]
 
--   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.10.0
-    hooks:
-    -   id: black
-        pass_filenames: false
-        args: [--config=./pyproject.toml, .]
-
--   repo: https://github.com/PyCQA/flake8
-    rev: 7.4.1
-    hooks:
-    -   id: flake8
-        types: [file, python]
-
 -   repo: https://github.com/pycqa/isort
     rev: 9.0.2
     hooks:
@@ -63,4 +50,13 @@ repos:
     hooks:
     -   id: pydocstyle
         args: [--convention=numpy]
+
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.15.20"
+    hooks:
+    -   id: ruff-check
+        types: [file, python]
+        args: [--fix, --show-fixes]
+    -   id: ruff-format
+        types: [file, python]
 
