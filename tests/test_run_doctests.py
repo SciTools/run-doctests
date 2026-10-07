@@ -1,10 +1,11 @@
 import os
-from pathlib import Path
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
+
 import run_doctests
 from run_doctests import list_filepaths_recursive, list_modules_recursive
 
@@ -15,7 +16,7 @@ def make_dirs_and_files(pattern, basepath):
         if not dirpath.exists():
             dirpath.mkdir()
         for content in pyfiles:
-            with open(dirpath / content, "w") as mainfile:
+            with open(dirpath / content, "w"):
                 # Just create an empty top-level file
                 pass
 
@@ -131,18 +132,18 @@ class TestListSources:
         assert result == [
             tmp_path / pathstr
             for pathstr in [
+                "maindir/ignore.this",
                 "maindir/s0.rst",
                 "maindir/s1.rst",
-                "maindir/ignore.this",
+                "maindir/subdir1/_px1.rst",
                 "maindir/subdir1/s1.rst",
                 "maindir/subdir1/s2.rst",
-                "maindir/subdir1/_px1.rst",
-                "maindir/subdir2/s6.rst",
                 "maindir/subdir1/subsubdir1/s3.rst",
                 "maindir/subdir1/subsubdir1/s4.rst",
+                "maindir/subdir1/subsubdir2/_px2.rst",
                 "maindir/subdir1/subsubdir2/s4.rst",
                 "maindir/subdir1/subsubdir2/s5.rst",
-                "maindir/subdir1/subsubdir2/_px2.rst",
+                "maindir/subdir2/s6.rst",
             ]
         ]
 
@@ -151,18 +152,18 @@ class TestListSources:
         assert result == [
             tmp_path / pathstr
             for pathstr in [
+                # 'maindir/ignore.this',
                 "maindir/s0.rst",
                 "maindir/s1.rst",
-                # 'maindir/ignore.this',
+                "maindir/subdir1/_px1.rst",
                 "maindir/subdir1/s1.rst",
                 "maindir/subdir1/s2.rst",
-                "maindir/subdir1/_px1.rst",
-                "maindir/subdir2/s6.rst",
                 "maindir/subdir1/subsubdir1/s3.rst",
                 "maindir/subdir1/subsubdir1/s4.rst",
+                "maindir/subdir1/subsubdir2/_px2.rst",
                 "maindir/subdir1/subsubdir2/s4.rst",
                 "maindir/subdir1/subsubdir2/s5.rst",
-                "maindir/subdir1/subsubdir2/_px2.rst",
+                "maindir/subdir2/s6.rst",
             ]
         ]
 
@@ -178,11 +179,11 @@ class TestListSources:
                 "maindir/s1.rst",
                 "maindir/subdir1/s1.rst",
                 "maindir/subdir1/s2.rst",
-                "maindir/subdir2/s6.rst",
                 "maindir/subdir1/subsubdir1/s3.rst",
                 "maindir/subdir1/subsubdir1/s4.rst",
                 "maindir/subdir1/subsubdir2/s4.rst",
                 "maindir/subdir1/subsubdir2/s5.rst",
+                "maindir/subdir2/s6.rst",
             ]
         ]
 
@@ -195,8 +196,8 @@ class TestListSources:
             tmp_path / pathstr
             for pathstr in [
                 "maindir/s1.rst",
-                "maindir/subdir1/s1.rst",
                 "maindir/subdir1/_px1.rst",
+                "maindir/subdir1/s1.rst",
             ]
         ]
 
@@ -265,29 +266,31 @@ class TestCliSources:
 
     def test_basic_error(self, badsources):
         result = runmain(badsources + "/*.rst", "-v", expect_rc=1)
-        test_lines = f"""
-            paths_are_modules=False, recurse_modules=False, include_private_modules=True, exclude_fragments=[], doctest_kwargs={{'module_relative': False, 'optionflags': 12}}, verbose=True, dry_run=False, stop_on_failure=False
-            0/1 OK, 1/1 FAILED in path: {badsources}/s0.rst
-            0/0 OK in path: {badsources}/s1.rst
-            run_doctest: FINAL REPORT
-                paths tested    = 2
-                tests completed = 1
-                errors          = 1
-
-            FAILED.
-        """
+        test_lines = [
+            (
+                "paths_are_modules=False, recurse_modules=False, "
+                "include_private_modules=True, exclude_fragments=[], "
+                "doctest_kwargs={'module_relative': False, 'optionflags': 12}"
+                ", verbose=True, dry_run=False, stop_on_failure=False"
+            ),
+            f"0/1 OK, 1/1 FAILED in path: {badsources}/s0.rst",
+            f"0/0 OK in path: {badsources}/s1.rst",
+            "   run_doctest: FINAL REPORT",
+            "       paths tested    = 2",
+            "       tests completed = 1",
+            "       errors          = 1",
+            "   FAILED.",
+        ]
         result = "\n".join(result)
-        for line in test_lines.split("\n"):
+        for line in test_lines:
             assert line.strip() in result
 
     def test_stop_on_fail(self, badsources):
         result = runmain(badsources + "/*.*t", "-vf", expect_rc=1)
         result_fullstr = "\n".join(result)
-        assert not "s1.rst" in result_fullstr
-        assert (
-            f"0/1 OK, 1/1 FAILED in path: {badsources}/s0.rst"
-            in result_fullstr
-        )
+        assert "s1.rst" not in result_fullstr
+        line = f"0/1 OK, 1/1 FAILED in path: {badsources}/s0.rst"
+        assert line in result_fullstr
         test_lines = [
             "(FAIL FAST: stopped at first path with errors)",
             "    paths tested    = 1",
@@ -306,10 +309,13 @@ class TestCliSources:
             "module_relative=false, junk= 3, unknown=this",
         )
         expected = [
-            "RUNNING run_doctest(paths=['any/*.rst'], paths_are_modules=False, "
-            "recurse_modules=False, include_private_modules=True, exclude_fragments=[], "
-            "doctest_kwargs={'module_relative': False, 'junk': 3, 'unknown': 'this', "
-            "'optionflags': 12}, verbose=True, dry_run=True, stop_on_failure=False)",
+            "RUNNING run_doctest(paths=['any/*.rst'], "
+            "paths_are_modules=False, "
+            "recurse_modules=False, include_private_modules=True, "
+            "exclude_fragments=[], "
+            "doctest_kwargs={'module_relative': False, 'junk': 3, "
+            "'unknown': 'this', 'optionflags': 12}, verbose=True, "
+            "dry_run=True, stop_on_failure=False)",
             "=====",
             "run_doctest: FINAL REPORT",
             "(DRY RUN: no actual tests)",
@@ -354,15 +360,15 @@ class TestCliSources:
             for name in [
                 "s0.rst",
                 # "s1.rst",
+                "subdir1/_px1.rst",
                 # "subdir1/s1.rst",
                 "subdir1/s2.rst",
-                "subdir1/_px1.rst",
-                # "subdir2/s6.rst",
                 "subdir1/subsubdir1/s3.rst",
                 "subdir1/subsubdir1/s4.rst",
+                # "subdir1/subsubdir2/_px2.rst",
                 # "subdir1/subsubdir2/s4.rst",
                 # "subdir1/subsubdir2/s5.rst",
-                # "subdir1/subsubdir2/_px2.rst",
+                # "subdir2/s6.rst",
             ]
         ]
 
@@ -401,7 +407,8 @@ class TestCliModules:
 
     @pytest.mark.parametrize("exclude", ["noexclude", "exclude"])
     def test_realrun_submodules(self, exclude):
-        # Tested via CLI because the exclude logic is now common to modules+sourcefiles
+        # Tested via CLI because the exclude logic is now common to
+        #  modules and sourcefiles
         do_exclude = exclude == "exclude"
         args = ["-mrd", "curses"]
         if do_exclude:

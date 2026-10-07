@@ -1,6 +1,5 @@
-"""
-Sample module for testing run-doctests.
-"""
+"""Sample module for testing run-doctests."""
+
 
 def function_ok():
     """
@@ -12,6 +11,7 @@ def function_ok():
     1
     """
     return 1
+
 
 def function_bad():
     """
