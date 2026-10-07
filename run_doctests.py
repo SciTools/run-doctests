@@ -30,18 +30,21 @@ def list_modules_recursive(
         print(f"\n\nIMPORT FAILED: {module_importname}\n  error: {exc}")
 
     if module_path is not None:
-        module_names.extend([
-            mod_info.name
-            for mod_info in pkgutil.walk_packages(
-                path=module_path,
-                prefix=f"{module_importname}.",
+        module_names.extend(
+            sorted(
+                mod_info.name
+                for mod_info in pkgutil.walk_packages(
+                    path=module_path,
+                    prefix=f"{module_importname}.",
+                )
             )
-        ])
+        )
         if not include_private:
             module_names = [
-                name for name in module_names
+                name
+                for name in module_names
                 if not any(part.startswith("_") for part in name.split(".")[1:])
-           ]
+            ]
 
     return module_names
 
@@ -60,7 +63,7 @@ def list_filepaths_recursive(
         else:
             glob_root = Path.cwd()
             glob_pattern = path
-        found_paths = list(glob_root.glob(str(glob_pattern)))
+        found_paths = sorted(glob_root.glob(str(glob_pattern)))
 
     return [path for path in found_paths if not path.is_dir()]
 
@@ -91,9 +94,7 @@ def process_options(
     # Implement some handy defaults
     if not paths_are_modules:
         if not "module_relative" in opts_dict:
-            opts_dict["module_relative"] = (
-                False  # we want this OFF, by default anyway
-            )
+            opts_dict["module_relative"] = False  # we want this OFF, by default anyway
     if not "optionflags" in opts_dict:
         default_flags = doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
         opts_dict["optionflags"] = default_flags  # a generally useful default?
@@ -142,9 +143,7 @@ def run_doctest_paths(
             module_paths = []
             for path in paths:
                 module_paths += list_modules_recursive(
-                    str(
-                        path
-                    ),  # for modules, 'paths' are always strings anyway
+                    str(path),  # for modules, 'paths' are always strings anyway
                     include_private=include_private_modules,
                     # exclude_fragments=exclude_fragments,
                 )
