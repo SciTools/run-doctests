@@ -11,11 +11,12 @@ but this repo ...
 
 ## Features
 * doesn't need a Sphinx build, so **runs much faster**
-  * (it runs on source files, for both docs and api docstrings)
+  * (it runs on the original source files, for both docs and api docstrings)
+* uses the `doctest` module to implement a 'standard' syntax
+  * (from the Python standard library)
+* makes it easy to test specific sourcefiles
 
-* make it easy to test specific sourcefiles
-
-* example help text:
+* example help text (including simple usage examples):
 ```
 $ ./tools/run_doctests.py
 usage: run_doctests [-h] [-m] [-r] [-p] [-e EXCLUDE] [-o [OPTIONS]] [-v] [-d] [-f] [paths ...]
