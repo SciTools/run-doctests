@@ -122,5 +122,7 @@ for exmaple the use of fixtures, `pytest.raises` or `mocker.patch`.
 
 Actually in practice, global changes *are* permitted and commonly used to simplify subsequent tests -- e.g. a package import, or a test object definition, which are re-used in subsequent doctests.
 
-    
+#### The commonest need : temporary files, removed afterwards
+ncdata needs this, not yet implemented (Oct 26).
+Some ideas [here]([url](https://github.com/SciTools/ncdata/issues/264))
    
