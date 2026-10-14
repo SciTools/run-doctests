@@ -124,5 +124,5 @@ Actually in practice, global changes *are* permitted and commonly used to simpli
 
 #### The commonest need : temporary files, removed afterwards
 ncdata needs this, not yet implemented (Oct 26).
-Some ideas [here]([url](https://github.com/SciTools/ncdata/issues/264))
+Some ideas [here](https://github.com/SciTools/ncdata/issues/264)
    
