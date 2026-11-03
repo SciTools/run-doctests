@@ -64,6 +64,23 @@ def badsources(tempsources):
     return tempsources
 
 
+@pytest.fixture
+def mixedsources(tmp_path):
+    # Like tempsources/badsources, but provide 2 files with a misture of good + bad
+    patt = {
+        "goodbads": ["s0.rst", "s1.rst"],
+    }
+    make_dirs_and_files(patt, tmp_path)
+    with open(tmp_path / "goodbads/s0.rst", "wt") as f_out:
+        f_out.write(">>> 123\n123\n")  # OK test
+        f_out.write("\n\n")
+        f_out.write(">>> 1\n2\n")  # FAILING test
+        f_out.write("\n\n")
+    with open(tmp_path / "goodbads/s1.rst", "wt") as f_out:
+        f_out.write(">>> print(4)\n4\n")  # OK test (only)
+    return str(tmp_path / "goodbads")  # targets must be str, not Path
+
+
 class TestListModules:
     def test_import(self, tempmodules):
         """Check that 'tempmodules' puts the test module on the import path."""
@@ -202,6 +219,7 @@ _RE_ANY_NONBLANK = re.compile(r".*\S.*")
 
 
 def runmain(*args, expect_rc: int | None = 0) -> list[str]:
+    """Run with args and return a list of output strings."""
     arglist = [_PYTHON_PATHSTR, _DOCTESTS_PATH] + list(args)
     call_data = subprocess.run(arglist, capture_output=True)
     rc = call_data.returncode
@@ -350,6 +368,68 @@ class TestCliSources:
                 # "subdir2/s6.rst",
             ]
         ]
+
+    @pytest.mark.parametrize("verbose", [False, True], ids=["noisy", "quiet"])
+    def test_verbose(self, mixedsources, verbose):
+        args = [mixedsources + "/**/*.rst"]
+        if verbose:
+            args.append("-v")
+        result_lines = runmain(*args, expect_rc=1)
+        expect_lines = []
+        if verbose:
+            # preamble -- only when verbose
+            expect_lines.extend(
+                [
+                    "RUNNING "
+                    f"run_doctest(paths=['{mixedsources}/**/*.rst'], "
+                    "paths_are_modules=False, recurse_modules=False, "
+                    "include_private_modules=True, exclude_fragments=[], "
+                    "doctest_kwargs={'module_relative': False, 'optionflags': 12}, "
+                    "verbose=True, dry_run=False, stop_on_failure=False)",
+                    "-----",
+                    f"doctest.testfile: {mixedsources}/s0.rst",
+                ]
+            )
+        # report on first file (with error) -- full including error output
+        expect_lines.extend(
+            [
+                "**********************************************************************",
+                f'File "{mixedsources}/s0.rst", line 5, in s0.rst',
+                "Failed example:",
+                "    1",
+                "Expected:",
+                "    2",
+                "Got:",
+                "    1",
+                "**********************************************************************",
+                "1 item had failures:",
+                "   1 of   2 in s0.rst",
+                "***Test Failed*** 1 failure.",
+                "**ERRORS**",
+                f"1/2 OK, 1/2 FAILED in path: {mixedsources}/s0.rst",
+            ]
+        )
+        if verbose:
+            # report on second file (no errors) -- only when verbose
+            expect_lines.extend(
+                [
+                    "-----",
+                    f"doctest.testfile: {mixedsources}/s1.rst",
+                    f"1/1 OK in path: {mixedsources}/s1.rst",
+                ]
+            )
+
+        expect_lines.extend(
+            [
+                "=====",
+                "run_doctest: FINAL REPORT",
+                "    paths tested    = 2",
+                "    tests completed = 3",
+                "    errors          = 1",
+                "FAILED.",
+            ]
+        )
+        assert result_lines == expect_lines
 
 
 class TestCliModules:
