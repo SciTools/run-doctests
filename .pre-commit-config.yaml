@@ -3,8 +3,7 @@
 
 files: |
     (?x)(
-        docs\/.+\.py|
-        lib\/.+\.py|
+        \.+\.py|
         tests\/.+\.py
     )
 minimum_pre_commit_version: 1.21.0
