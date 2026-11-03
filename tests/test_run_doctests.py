@@ -96,27 +96,6 @@ class TestListModules:
             "tmp_test_module.sm2.s6",
         ]
 
-    def test_recurse_noprivate(self, tempmodules):
-        result = list_modules_recursive(tempmodules, include_private=False)
-        assert result == [
-            "tmp_test_module",
-            "tmp_test_module.s0",
-            "tmp_test_module.s1",
-            "tmp_test_module.sm1",
-            # 'tmp_test_module.sm1._ps1',
-            "tmp_test_module.sm1.s1",
-            "tmp_test_module.sm1.s2",
-            "tmp_test_module.sm1.ssm1",
-            "tmp_test_module.sm1.ssm1.s3",
-            "tmp_test_module.sm1.ssm1.s4",
-            "tmp_test_module.sm1.ssm2",
-            # 'tmp_test_module.sm1.ssm2._ps2',
-            "tmp_test_module.sm1.ssm2.s4",
-            "tmp_test_module.sm1.ssm2.s5",
-            "tmp_test_module.sm2",
-            "tmp_test_module.sm2.s6",
-        ]
-
 
 class TestListSources:
     def test_nonexist(self, tempsources):
@@ -269,7 +248,7 @@ class TestCliSources:
         test_lines = [
             (
                 "paths_are_modules=False, recurse_modules=False, "
-                "include_private_modules=True, exclude_fragments=[], "
+                "exclude_fragments=[], "
                 "doctest_kwargs={'module_relative': False, 'optionflags': 12}"
                 ", verbose=True, dry_run=False, stop_on_failure=False"
             ),
@@ -311,7 +290,7 @@ class TestCliSources:
         expected = [
             "RUNNING run_doctest(paths=['any/*.rst'], "
             "paths_are_modules=False, "
-            "recurse_modules=False, include_private_modules=True, "
+            "recurse_modules=False, "
             "exclude_fragments=[], "
             "doctest_kwargs={'module_relative': False, 'junk': 3, "
             "'unknown': 'this', 'optionflags': 12}, verbose=True, "
@@ -374,20 +353,6 @@ class TestCliSources:
 
 
 class TestCliModules:
-    @pytest.mark.parametrize("publiconly", [False, True])
-    def test_modules_publiconly(self, publiconly):
-        """Check that the '-p' option is passed down."""
-        args = [
-            "argparse",
-            "-mdv",
-        ]  # NB list module: don't recurse or run actual tests
-        if publiconly:
-            args += ["-p"]
-        result = runmain(*args)
-        print("\n".join(result))
-        expect = f"include_private_modules={not publiconly}"
-        assert expect in result[0]
-
     @pytest.mark.parametrize("recurse", [False, True])
     def test_modules_recurse(self, recurse):
         """Check that the '-r' option is passed down."""
