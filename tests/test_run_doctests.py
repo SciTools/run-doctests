@@ -375,6 +375,12 @@ class TestCliSources:
         if verbose:
             args.append("-v")
         result_lines = runmain(*args, expect_rc=1)
+        # Handle a small change to doctests between Python 3.12 and 3.13:
+        #  used to say e.g. "1 failures, 2 failures" -- now "1 failure, 2 failures"
+        result_lines = [
+            line.replace("failures", "failure").replace("items", "item")
+            for line in result_lines
+        ]
         expect_lines = []
         if verbose:
             # preamble -- only when verbose
@@ -383,7 +389,7 @@ class TestCliSources:
                     "RUNNING "
                     f"run_doctest(paths=['{mixedsources}/**/*.rst'], "
                     "paths_are_modules=False, recurse_modules=False, "
-                    "include_private_modules=True, exclude_fragments=[], "
+                    "exclude_fragments=[], "
                     "doctest_kwargs={'module_relative': False, 'optionflags': 12}, "
                     "verbose=True, dry_run=False, stop_on_failure=False)",
                     "-----",
@@ -402,7 +408,7 @@ class TestCliSources:
                 "Got:",
                 "    1",
                 "**********************************************************************",
-                "1 item had failures:",
+                "1 item had failure:",
                 "   1 of   2 in s0.rst",
                 "***Test Failed*** 1 failure.",
                 "**ERRORS**",
