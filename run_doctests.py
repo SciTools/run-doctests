@@ -301,17 +301,19 @@ if __name__ == "__main__":
     args = _parser.parse_args(sys.argv[1:])
     if not args.paths:
         _parser.print_help()
+        # Not an "error".
+        exit(0)
 
-    else:
-        n_errs = run_doctest_paths(
-            paths=args.paths,
-            paths_are_modules=args.module,
-            recurse_modules=args.recurse,
-            exclude_fragments=args.exclude or [],
-            doctest_kwargs=process_options(args.options, args.module),
-            verbose=args.verbose,
-            dry_run=args.dryrun,
-            stop_on_failure=args.stop_on_fail,
-        )
-        if n_errs > 0:
-            exit(1)
+    # else..
+    n_errs = run_doctest_paths(
+        paths=args.paths,
+        paths_are_modules=args.module,
+        recurse_modules=args.recurse,
+        exclude_fragments=args.exclude or [],
+        doctest_kwargs=process_options(args.options, args.module),
+        verbose=args.verbose,
+        dry_run=args.dryrun,
+        stop_on_failure=args.stop_on_fail,
+    )
+    if n_errs > 0:
+        exit(1)
