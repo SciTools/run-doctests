@@ -30,7 +30,6 @@ options:
   -h, --help            show this help message and exit
   -m, --module          paths are module paths (xx.yy.zz), instead of filepaths.
   -r, --recurse         include submodules (only applies with -m).
-  -p, --publiconly      exclude module names beginning '_' (only applies with -m and -r)
   -e, --exclude EXCLUDE
                         exclude paths containing substring (may appear multiple times).
   -o, --options [OPTIONS]
