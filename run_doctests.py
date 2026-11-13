@@ -7,12 +7,13 @@ TODO this utility should be templated for easy code sharing across repos.
 import argparse
 import doctest
 import importlib
-from pathlib import Path
 import pkgutil
 import sys
 import traceback
-from typing import Any, Callable
 import warnings
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
 
 
 def list_modules_recursive(module_importname: str) -> list[str]:
