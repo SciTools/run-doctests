@@ -84,9 +84,9 @@ def process_options(
 
     # Implement some handy defaults
     if not paths_are_modules:
-        if not "module_relative" in opts_dict:
+        if "module_relative" not in opts_dict:
             opts_dict["module_relative"] = False  # we want this OFF, by default anyway
-    if not "optionflags" in opts_dict:
+    if "optionflags" not in opts_dict:
         default_flags = doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
         opts_dict["optionflags"] = default_flags  # a generally useful default?
 
@@ -301,16 +301,19 @@ if __name__ == "__main__":
     args = _parser.parse_args(sys.argv[1:])
     if not args.paths:
         _parser.print_help()
-    else:
-        n_errs = run_doctest_paths(
-            paths=args.paths,
-            paths_are_modules=args.module,
-            recurse_modules=args.recurse,
-            exclude_fragments=args.exclude or [],
-            doctest_kwargs=process_options(args.options, args.module),
-            verbose=args.verbose,
-            dry_run=args.dryrun,
-            stop_on_failure=args.stop_on_fail,
-        )
-        if n_errs > 0:
-            exit(1)
+        # Not an "error".
+        exit(0)
+
+    # else..
+    n_errs = run_doctest_paths(
+        paths=args.paths,
+        paths_are_modules=args.module,
+        recurse_modules=args.recurse,
+        exclude_fragments=args.exclude or [],
+        doctest_kwargs=process_options(args.options, args.module),
+        verbose=args.verbose,
+        dry_run=args.dryrun,
+        stop_on_failure=args.stop_on_fail,
+    )
+    if n_errs > 0:
+        exit(1)
